@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Französisch A1+ Quiz – Kahoot-Stil</title>
+<style>
+  :root {
+    --bg1:#46178f; --bg2:#25076b; --card:#ffffff; --text:#181818;
+    --muted:#666; --ok:#d8f7df; --bad:#ffe0e0;
+  }
+  * { box-sizing:border-box; }
+  body {
+    margin:0; font-family:Arial, Helvetica, sans-serif;
+    background:linear-gradient(135deg,var(--bg1),var(--bg2));
+    color:white; min-height:100vh;
+  }
+  .app { max-width:1050px; margin:0 auto; padding:24px; }
+  header { display:flex; justify-content:space-between; align-items:center; gap:12px; margin-bottom:16px; }
+  .logo { font-weight:900; font-size:28px; }
+  .pill { background:rgba(255,255,255,.16); padding:10px 14px; border-radius:999px; font-weight:800; }
+  .screen { background:rgba(255,255,255,.12); border:2px solid rgba(255,255,255,.25); border-radius:28px; padding:22px; box-shadow:0 20px 60px rgba(0,0,0,.25); }
+  .card { background:var(--card); color:var(--text); border-radius:24px; padding:24px; box-shadow:0 10px 24px rgba(0,0,0,.18); }
+  h1 { font-size:34px; margin-top:0; } h2 { font-size:27px; margin-top:0; line-height:1.25; }
+  .center { text-align:center; } .muted { color:var(--muted); }
+  button { border:0; border-radius:18px; padding:14px 20px; font-size:18px; font-weight:900; cursor:pointer; transition:.15s transform,.15s opacity; }
+  button:hover { transform:scale(1.02); }
+  .start { background:#ffdd33; color:#2d1764; font-size:22px; }
+  .primary { background:#46178f; color:white; }
+  .smallBtn { font-size:16px; padding:10px 14px; border-radius:14px; background:#eee; color:#222; }
+  .answers { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:18px; }
+  .answer { min-height:92px; color:white; display:flex; align-items:center; justify-content:center; gap:10px; text-align:center; font-size:21px; line-height:1.25; }
+  .answer:nth-child(1){background:#e21b3c} .answer:nth-child(2){background:#1368ce}
+  .answer:nth-child(3){background:#d89e00} .answer:nth-child(4){background:#26890c}
+  .shape { font-size:25px; }
+  .topbar { display:flex; justify-content:space-between; align-items:center; margin-bottom:14px; gap:8px; }
+  .progress { height:14px; background:#eee; border-radius:20px; overflow:hidden; flex:1; }
+  .bar { height:100%; background:#ffdd33; }
+  .bigEmoji { font-size:74px; margin:10px 0 14px; }
+  .feedback { margin-top:16px; padding:14px; border-radius:18px; font-size:18px; font-weight:800; display:none; }
+  .ok { background:var(--ok); color:#116b28; } .bad { background:var(--bad); color:#9b1111; }
+  .imageRow { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-top:16px; }
+  .imageChoice { background:#f2f2f2; border:5px solid transparent; border-radius:22px; padding:22px; cursor:pointer; text-align:center; font-size:76px; min-height:145px; display:flex; align-items:center; justify-content:center; }
+  .imageChoice.selected { border-color:#46178f; background:#eee6ff; }
+  .dragZone,.dropZone { display:flex; flex-wrap:wrap; gap:10px; min-height:72px; border-radius:18px; padding:12px; }
+  .dragZone { background:#f0eef9; } .dropZone { background:#fff7d2; border:3px dashed #d89e00; margin-top:14px; }
+  .tile { background:#46178f; color:white; border-radius:14px; padding:12px 16px; font-weight:900; font-size:20px; cursor:grab; user-select:none; }
+  .dropZone .tile { background:#1368ce; }
+  .footerButtons { display:flex; justify-content:space-between; margin-top:18px; gap:10px; }
+  input { width:100%; padding:14px; border:2px solid #ddd; border-radius:16px; font-size:20px; }
+  .memoryGrid { display:grid; grid-template-columns:repeat(4,1fr); gap:10px; margin-top:16px; }
+  .mem { background:#eee; border-radius:18px; min-height:92px; font-size:36px; display:flex; align-items:center; justify-content:center; cursor:pointer; border:3px solid transparent; padding:8px; text-align:center; }
+  .mem.revealed { background:#fff2b8; border-color:#f9c74f; } .mem.matched { background:#d8f7df; border-color:#2ecc71; cursor:default; }
+  .finalScore { font-size:52px; font-weight:900; color:#46178f; }
+  @media (max-width:700px) {
+    .answers,.imageRow { grid-template-columns:1fr; }
+    .memoryGrid { grid-template-columns:repeat(2,1fr); }
+    h1 { font-size:28px; } .answer { font-size:19px; } .imageChoice { min-height:115px; font-size:62px; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="logo">Französisch A1+ 🎉</div>
+    <div class="pill">40 Aufgaben</div>
+  </header>
+  <main id="app" class="screen"></main>
+</div>
+
+<script>
+const questions = [{"type": "choice", "q": "Du kommst morgens in die Klasse. Was sagst du?", "options": ["Bonsoir !", "Bonjour !", "Bonne nuit !", "À demain !"], "answer": 1, "explain": "Morgens und tagsüber sagt man: Bonjour !"}, {"type": "drag", "q": "Bringe den Satz in die richtige Reihenfolge.", "words": ["avec", "au", "Je", "mes amis", "vais", "cinéma"], "answer": ["Je", "vais", "au", "cinéma", "avec", "mes amis"], "explain": "Richtig: Je vais au cinéma avec mes amis."}, {"type": "image", "q": "Klicke auf das Bild, das zu „un vélo“ passt.", "options": [{"emoji": "🚗"}, {"emoji": "🚲"}, {"emoji": "✈️"}], "answer": 1, "explain": "Un vélo = ein Fahrrad."}, {"type": "choice", "q": "Welche Antwort passt am besten? — Tu as quel âge ?", "options": ["J'ai quatorze ans.", "Je suis à Paris.", "Je vais bien.", "Je m'appelle Léa."], "answer": 0, "explain": "Bei Alter benutzt man avoir: J'ai quatorze ans."}, {"type": "drag", "q": "Baue die Frage richtig zusammen.", "words": ["que", "tu", "Qu'est-ce", "fais", "?"], "answer": ["Qu'est-ce", "que", "tu", "fais", "?"], "explain": "Richtig: Qu'est-ce que tu fais ?"}, {"type": "image", "q": "Klicke auf das Bild, das zu „il neige“ passt.", "options": [{"emoji": "☀️"}, {"emoji": "🌧️"}, {"emoji": "❄️"}], "answer": 2, "explain": "Il neige = Es schneit."}, {"type": "choice", "q": "Welche Form ist richtig?", "options": ["Nous sommes contents.", "Nous êtes contents.", "Nous suis contents.", "Nous est contents."], "answer": 0, "explain": "Die Form von être mit nous ist: nous sommes."}, {"type": "drag", "q": "Baue den Satz: „Ich esse oft Pizza in der Schule.“", "words": ["souvent", "Je", "à", "mange", "de la pizza", "l'école"], "answer": ["Je", "mange", "souvent", "de la pizza", "à", "l'école"], "explain": "Richtig: Je mange souvent de la pizza à l'école."}, {"type": "choice", "q": "Welche Übersetzung passt zu „J'aime écouter de la musique“?", "options": ["Ich mag Musik hören.", "Ich spiele Musik.", "Ich kaufe Musik.", "Ich hasse Musik."], "answer": 0, "explain": "J'aime écouter de la musique = Ich mag Musik hören."}, {"type": "image", "q": "Klicke auf das Bild, das zu „une pomme“ passt.", "options": [{"emoji": "🍞"}, {"emoji": "🍎"}, {"emoji": "🥛"}], "answer": 1, "explain": "Une pomme = ein Apfel."}, {"type": "choice", "q": "Was bedeutet „Je voudrais un jus d'orange, s'il vous plaît“?", "options": ["Ich möchte bitte einen Orangensaft.", "Ich habe keinen Hunger.", "Ich esse eine Orange.", "Ich trinke Wasser."], "answer": 0, "explain": "Je voudrais ... s'il vous plaît ist eine höfliche Bestellung."}, {"type": "drag", "q": "Baue den Satz mit Verneinung.", "words": ["pas", "le", "Je", "ne", "français", "parle"], "answer": ["Je", "ne", "parle", "pas", "le", "français"], "explain": "Richtig: Je ne parle pas le français."}, {"type": "image", "q": "Klicke auf das Bild, das zu „un professeur“ passt.", "options": [{"emoji": "👨‍🍳"}, {"emoji": "👩‍🏫"}, {"emoji": "👮"}], "answer": 1, "explain": "Un professeur = ein Lehrer / eine Lehrerin."}, {"type": "choice", "q": "Welche Frage passt zur Antwort: „J'habite à Hambourg.“?", "options": ["Où habites-tu ?", "Comment tu t'appelles ?", "Tu as quel âge ?", "Tu aimes le sport ?"], "answer": 0, "explain": "Où habites-tu ? = Wo wohnst du?"}, {"type": "drag", "q": "Bringe den Satz in die richtige Reihenfolge.", "words": ["ma", "avec", "J'habite", "famille"], "answer": ["J'habite", "avec", "ma", "famille"], "explain": "Richtig: J'habite avec ma famille."}, {"type": "choice", "q": "Welche Form ist richtig?", "options": ["Elle a un frère et une sœur.", "Elle est un frère et une sœur.", "Elle as un frère et une sœur.", "Elle ont un frère et une sœur."], "answer": 0, "explain": "Mit elle heißt es: elle a."}, {"type": "memory", "q": "Memory: Finde die passenden Paare.", "pairs": [["🐱", "le chat"], ["🏫", "l'école"], ["⚽", "le football"], ["📚", "les livres"]], "explain": "Sehr gut! Alle Paare gefunden."}, {"type": "image", "q": "Klicke auf das Bild, das zu „faire du sport“ passt.", "options": [{"emoji": "📺"}, {"emoji": "🏃"}, {"emoji": "🛌"}], "answer": 1, "explain": "Faire du sport = Sport machen."}, {"type": "choice", "q": "Was passt in die Lücke? Le week-end, je ___ au parc.", "options": ["vais", "va", "vas", "allez"], "answer": 0, "explain": "Mit je heißt es: je vais."}, {"type": "drag", "q": "Baue einen längeren Satz.", "words": ["parce que", "J'aime", "le chocolat", "c'est", "bon"], "answer": ["J'aime", "le chocolat", "parce que", "c'est", "bon"], "explain": "Richtig: J'aime le chocolat parce que c'est bon."}, {"type": "choice", "q": "Welche Antwort passt? — Tu veux venir avec nous ?", "options": ["Oui, avec plaisir !", "Il est dans la cuisine.", "J'ai une trousse.", "C'est rouge."], "answer": 0, "explain": "Oui, avec plaisir ! = Ja, gerne!"}, {"type": "image", "q": "Klicke auf das Bild, das zu „le petit déjeuner“ passt.", "options": [{"emoji": "🥐☕"}, {"emoji": "🍝"}, {"emoji": "🍔"}], "answer": 0, "explain": "Le petit déjeuner = das Frühstück."}, {"type": "drag", "q": "Baue die Frage richtig zusammen.", "words": ["tu", "Est-ce", "le", "aimes", "sport", "que", "?"], "answer": ["Est-ce", "que", "tu", "aimes", "le", "sport", "?"], "explain": "Richtig: Est-ce que tu aimes le sport ?"}, {"type": "choice", "q": "Welche Farbe passt zu „une voiture rouge“?", "options": ["ein rotes Auto", "ein grünes Auto", "ein blaues Fahrrad", "ein gelbes Haus"], "answer": 0, "explain": "Rouge = rot."}, {"type": "write", "q": "Mini-Schreibaufgabe: Wie heißt „Danke“ auf Französisch?", "answer": ["merci"], "explain": "Danke = merci."}, {"type": "choice", "q": "Welche Form ist richtig?", "options": ["Ils sont à la maison.", "Ils est à la maison.", "Ils sommes à la maison.", "Ils êtes à la maison."], "answer": 0, "explain": "Mit ils heißt es: ils sont."}, {"type": "image", "q": "Klicke auf das Bild, das zu „un chien“ passt.", "options": [{"emoji": "🐭"}, {"emoji": "🐶"}, {"emoji": "🐰"}], "answer": 1, "explain": "Un chien = ein Hund."}, {"type": "drag", "q": "Baue den Satz: „Nach der Schule mache ich meine Hausaufgaben.“", "words": ["mes devoirs", "Après", "je", "l'école", "fais"], "answer": ["Après", "l'école", "je", "fais", "mes devoirs"], "explain": "Richtig: Après l'école, je fais mes devoirs."}, {"type": "choice", "q": "Was bedeutet „Je suis fatigué, mais je vais bien“?", "options": ["Ich bin müde, aber es geht mir gut.", "Ich bin krank und gehe nach Hause.", "Ich bin hungrig, aber ich trinke.", "Ich bin traurig und müde."], "answer": 0, "explain": "Fatigué = müde; je vais bien = es geht mir gut."}, {"type": "write", "q": "Mini-Schreibaufgabe: Wie heißt „Hallo“ auf Französisch?", "answer": ["bonjour", "salut"], "explain": "Möglich ist: bonjour oder salut."}, {"type": "choice", "q": "Welche Antwort passt? — Quelle heure est-il ?", "options": ["Il est huit heures.", "Je suis huit ans.", "J'habite à Lyon.", "C'est mon frère."], "answer": 0, "explain": "Quelle heure est-il ? fragt nach der Uhrzeit."}, {"type": "drag", "q": "Baue den Satz: „Ich gehe heute Nachmittag mit meinem Bruder in die Stadt.“", "words": ["en ville", "cet après-midi", "avec mon frère", "Je vais"], "answer": ["Je vais", "en ville", "cet après-midi", "avec mon frère"], "explain": "Richtig: Je vais en ville cet après-midi avec mon frère."}, {"type": "image", "q": "Klicke auf das Bild, das zu „la boulangerie“ passt.", "options": [{"emoji": "🏥"}, {"emoji": "🥖"}, {"emoji": "🏊"}], "answer": 1, "explain": "La boulangerie = die Bäckerei."}, {"type": "choice", "q": "Welche Übersetzung passt zu „Je prends le bus pour aller à l'école“?", "options": ["Ich nehme den Bus, um zur Schule zu fahren.", "Ich esse im Bus in der Schule.", "Ich kaufe einen Bus für die Schule.", "Ich gehe nicht zur Schule."], "answer": 0, "explain": "Prendre le bus = den Bus nehmen; pour aller à l'école = um zur Schule zu fahren."}, {"type": "drag", "q": "Baue die Frage richtig zusammen.", "words": ["tu", "Où", "pendant", "les vacances", "vas", "?"], "answer": ["Où", "vas", "tu", "pendant", "les vacances", "?"], "explain": "Richtig: Où vas-tu pendant les vacances ?"}, {"type": "choice", "q": "Was passt in die Lücke? Ma sœur ___ beaucoup les animaux.", "options": ["aime", "aimes", "aiment", "aimons"], "answer": 0, "explain": "Ma sœur = elle. Deshalb: elle aime."}, {"type": "image", "q": "Klicke auf das Bild, das zu „il fait chaud“ passt.", "options": [{"emoji": "🥶"}, {"emoji": "😎☀️"}, {"emoji": "☔"}], "answer": 1, "explain": "Il fait chaud = Es ist warm / heiß."}, {"type": "drag", "q": "Baue den Satz: „Am Samstag spiele ich Fußball mit meinen Freunden.“", "words": ["avec mes amis", "au football", "Le samedi", "je joue"], "answer": ["Le samedi", "je joue", "au football", "avec mes amis"], "explain": "Richtig: Le samedi, je joue au football avec mes amis."}, {"type": "choice", "q": "Welche Antwort passt? — Qu'est-ce que tu aimes manger ?", "options": ["J'aime manger des crêpes.", "Je suis dans ma chambre.", "Il est professeur.", "Elle a onze ans."], "answer": 0, "explain": "Die Frage bedeutet: Was isst du gern?"}, {"type": "image", "q": "Klicke auf das Bild, das zu „la chambre“ passt.", "options": [{"emoji": "🛏️"}, {"emoji": "🚿"}, {"emoji": "🌳"}], "answer": 0, "explain": "La chambre = das Zimmer / Schlafzimmer."}];
+let index = 0, score = 0, locked = false, selectedImage = null, memoryState = null;
+const app = document.getElementById("app");
+
+function startScreen(){
+  app.innerHTML = `<div class="card center">
+    <h1>Französisch A1+ Quiz</h1>
+    <p class="muted">Kahoot-Stil mit Auswahl, Bildern ohne Lösungshinweis, Drag & Drop, Memory und nur zwei Mini-Schreibaufgaben.</p>
+    <div class="bigEmoji">🇫🇷✨🎮</div>
+    <button class="start" onclick="startQuiz()">Start</button>
+  </div>`;
+}
+function startQuiz(){ index=0; score=0; locked=false; renderQuestion(); }
+function renderFrame(content){
+  const percent = Math.round((index/questions.length)*100);
+  app.innerHTML = `<div class="topbar">
+    <div class="pill">Frage ${index+1}/${questions.length}</div>
+    <div class="progress"><div class="bar" style="width:${percent}%"></div></div>
+    <div class="pill">Punkte: ${score}</div>
+  </div><div class="card">${content}</div>`;
+}
+function renderQuestion(){
+  locked=false; selectedImage=null;
+  const item = questions[index];
+  if(item.type==="choice") renderChoice(item);
+  if(item.type==="drag") renderDrag(item);
+  if(item.type==="image") renderImage(item);
+  if(item.type==="write") renderWrite(item);
+  if(item.type==="memory") renderMemory(item);
+}
+function renderChoice(item){
+  const shapes = ["◆","●","▲","■"];
+  renderFrame(`<h2>${item.q}</h2><div class="answers">
+    ${item.options.map((op,i)=>`<button class="answer" onclick="checkChoice(${i})"><span class="shape">${shapes[i]}</span>${op}</button>`).join("")}
+  </div><div id="feedback" class="feedback"></div>`);
+}
+function checkChoice(i){ if(locked) return; locked=true; const item=questions[index]; showFeedback(i===item.answer,item.explain); }
+function renderImage(item){
+  renderFrame(`<h2>${item.q}</h2>
+    <div class="imageRow">${item.options.map((op,i)=>`<div class="imageChoice" onclick="selectImage(${i})" id="img${i}">${op.emoji}</div>`).join("")}</div>
+    <div class="footerButtons"><button class="smallBtn" onclick="renderQuestion()">Zurücksetzen</button><button class="primary" onclick="checkImage()">Antwort prüfen</button></div>
+    <div id="feedback" class="feedback"></div>`);
+}
+function selectImage(i){ selectedImage=i; document.querySelectorAll(".imageChoice").forEach(el=>el.classList.remove("selected")); document.getElementById("img"+i).classList.add("selected"); }
+function checkImage(){ if(locked || selectedImage===null) return; locked=true; const item=questions[index]; showFeedback(selectedImage===item.answer,item.explain); }
+function renderDrag(item){
+  const shuffled = [...item.words].sort(()=>Math.random()-.5);
+  renderFrame(`<h2>${item.q}</h2><p class="muted">Ziehe die Wörter in das gelbe Feld. Auf Tablet/Handy kannst du sie auch antippen.</p>
+    <div class="dragZone" id="source">${shuffled.map((w,i)=>`<div class="tile" draggable="true" data-word="${escapeHtml(w)}" id="tile${i}">${w}</div>`).join("")}</div>
+    <div class="dropZone" id="target"></div>
+    <div class="footerButtons"><button class="smallBtn" onclick="renderQuestion()">Neu mischen</button><button class="primary" onclick="checkDrag()">Antwort prüfen</button></div>
+    <div id="feedback" class="feedback"></div>`);
+  setupDrag();
+}
+function setupDrag(){
+  let dragged=null;
+  document.querySelectorAll(".tile").forEach(tile=>{
+    tile.addEventListener("dragstart", e=>{ dragged=tile; e.dataTransfer.setData("text/plain", tile.dataset.word); });
+    tile.addEventListener("click", ()=>{ const target=document.getElementById("target"); const source=document.getElementById("source"); (tile.parentElement.id==="source"?target:source).appendChild(tile); });
+  });
+  ["source","target"].forEach(id=>{
+    const zone=document.getElementById(id);
+    zone.addEventListener("dragover", e=>e.preventDefault());
+    zone.addEventListener("drop", e=>{ e.preventDefault(); if(dragged) zone.appendChild(dragged); });
+  });
+}
+function checkDrag(){
+  if(locked) return;
+  const item=questions[index];
+  const chosen=[...document.querySelectorAll("#target .tile")].map(t=>t.dataset.word);
+  if(chosen.length!==item.answer.length){ showFeedback(false,"Es fehlen noch Wörter. "+item.explain,false); return; }
+  locked=true;
+  showFeedback(JSON.stringify(chosen)===JSON.stringify(item.answer),item.explain);
+}
+function renderWrite(item){
+  renderFrame(`<h2>${item.q}</h2><input id="writeAnswer" placeholder="Antwort hier eingeben">
+    <div class="footerButtons"><button class="smallBtn" onclick="document.getElementById('writeAnswer').value=''">Leeren</button><button class="primary" onclick="checkWrite()">Antwort prüfen</button></div>
+    <div id="feedback" class="feedback"></div>`);
+  document.getElementById("writeAnswer").focus();
+}
+function checkWrite(){
+  if(locked) return; locked=true;
+  const item=questions[index]; const val=normalize(document.getElementById("writeAnswer").value);
+  showFeedback(item.answer.some(a=>normalize(a)===val),item.explain);
+}
+function renderMemory(item){
+  const cards=[]; item.pairs.forEach((p,idx)=>{ cards.push({value:p[0],pair:idx,kind:"emoji"}); cards.push({value:p[1],pair:idx,kind:"word"}); });
+  cards.sort(()=>Math.random()-.5); memoryState={cards,open:[],matched:0};
+  renderFrame(`<h2>${item.q}</h2><p class="muted">Klicke ein Bild und das passende französische Wort an.</p>
+    <div class="memoryGrid">${cards.map((c,i)=>`<div class="mem" id="mem${i}" onclick="flipMem(${i})">?</div>`).join("")}</div>
+    <div id="feedback" class="feedback"></div>`);
+}
+function flipMem(i){
+  const state=memoryState, el=document.getElementById("mem"+i);
+  if(el.classList.contains("matched") || state.open.includes(i) || state.open.length>=2) return;
+  el.textContent=state.cards[i].value; el.classList.add("revealed"); state.open.push(i);
+  if(state.open.length===2){
+    const [a,b]=state.open; const ok=state.cards[a].pair===state.cards[b].pair && state.cards[a].kind!==state.cards[b].kind;
+    setTimeout(()=>{ 
+      if(ok){ document.getElementById("mem"+a).classList.add("matched"); document.getElementById("mem"+b).classList.add("matched"); state.matched++; if(state.matched===state.cards.length/2){ locked=true; showFeedback(true,questions[index].explain); } }
+      else { [a,b].forEach(n=>{ const card=document.getElementById("mem"+n); card.textContent="?"; card.classList.remove("revealed"); }); }
+      state.open=[];
+    },650);
+  }
+}
+function showFeedback(ok,text,canScore=true){
+  const fb=document.getElementById("feedback");
+  fb.style.display="block"; fb.className="feedback "+(ok?"ok":"bad");
+  if(ok && canScore) score++;
+  fb.innerHTML=`${ok?"✅ Richtig!":"❌ Fast!"} ${text}<br><br><button class="primary" onclick="nextQuestion()">${index===questions.length-1?"Ergebnis anzeigen":"Weiter"}</button>`;
+}
+function nextQuestion(){ index++; if(index>=questions.length) finalScreen(); else renderQuestion(); }
+function finalScreen(){
+  const percent=Math.round(score/questions.length*100);
+  let msg="Gut gemacht!";
+  if(percent>=85) msg="Fantastisch! Très bien !";
+  else if(percent>=65) msg="Sehr gut! Weiter so!";
+  else if(percent>=45) msg="Schon ordentlich! Noch einmal spielen hilft.";
+  app.innerHTML=`<div class="card center"><h1>Quiz beendet 🎉</h1><div class="finalScore">${score}/${questions.length}</div><h2>${percent}%</h2><p class="muted">${msg}</p><button class="start" onclick="startQuiz()">Noch einmal spielen</button></div>`;
+}
+function normalize(str){ return str.toLowerCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[.!?]/g,"").replace(/\s+/g," "); }
+function escapeHtml(str){ return String(str).replace(/[&<>"']/g, m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m])); }
+startScreen();
+</script>
+</body>
+</html>
